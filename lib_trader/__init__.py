@@ -10,4 +10,4 @@ __maintainer__ = "Justin Furuness"
 __email__ = "jfuruness@gmail.com"
 __status__ = "Development"
 
-from .Trader import Trader
+from .trader import Trader

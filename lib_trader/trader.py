@@ -15,8 +15,8 @@ import re
 
 import smtplib
 import time
-import imaplib
 import email
+import imaplib
 import traceback
 
 from lib_config import Config
@@ -26,26 +26,30 @@ from webull import paper_webull, webull
 class Trader:
     def __init__(self, real_money=False):
         self.wb = webull() if real_money else paper_webull()
-        self.webull_login()
+        # self.webull_login()
 
     def webull_login(self):
-        utils.write_to_stdout("Logging in webull")
+        utils.write_to_stdout("Logging in to webull")
         self.wb_start_time = datetime.now()
-        email, trade_token, password = Config().webull_creds()
-        self.wb.get_mfa(email)
+        _email, trade_token, password = Config().webull_creds()
+        self.wb.get_mfa(_email)
         mfa = self.get_webull_verification_code()
         self.trade_token = trade_token
-        utils.write_to_stdout(self.wb.login(email, password, "JMF", mfa))
+        result  =  self.wb.login(_email, password, "JMF", mfa))
+        for err in ["Incorrect", "Wrong format"]:
+            assert err not in str(result)
+        utils.write_to_stdout(result)
+        utils.write_to_stdout("Logged in to webull")
 
     def get_webull_verification_code(self):
         # https://www.geeksforgeeks.org/python-fetch-your-gmail-emails-from-a-particular-user/
-        enail, password = Config().get_webull_email_creds()
+        _email, password = Config().webull_email_creds()
         SMTP_SERVER = "imap.gmail.com" 
         SMTP_PORT = 993
 
         try:
             mail = imaplib.IMAP4_SSL(SMTP_SERVER)
-            mail.login(email, password)
+            mail.login(str(_email), str(password))
             mail.select('inbox')
 
             data = mail.search(None, 'ALL')
@@ -63,7 +67,7 @@ class Trader:
                         email_subject = msg['subject']
                         email_from = msg['from']
                         if "webull" in email_from.lower():
-                            return re.findall("Verification Code: .*?(\d{6})", msg)[0]
+                            return re.findall("Verification Code: .*?(\d{6})", str(msg))[0]
                         print('From : ' + email_from + '\n')
                         print('Subject : ' + email_subject + '\n')
 
@@ -73,4 +77,5 @@ class Trader:
 
     def trade(self, alert):
         # Alert object from lib_quant_2/lib_quant_2/alert.py
-        pass
+        utils.write_to_stdout(alert.text)
+        utils.write_to_stdout("In trade")

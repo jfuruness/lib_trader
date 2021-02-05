@@ -21,11 +21,13 @@ from lib_config import Config
 from lib_utils import utils
 from webull import paper_webull, webull
 
+from .actions import Actions
+
 
 class Trader:
     def __init__(self, real_money=False):
         self.wb = webull() if real_money else paper_webull()
-        # self.webull_login()
+        self.webull_login()
 
     def webull_login(self):
         utils.write_to_stdout("Logging in to webull")

@@ -33,15 +33,18 @@ class Trader:
     def webull_login(self):
         utils.write_to_stdout("Logging in to webull")
         self.wb_start_time = datetime.now()
-        _email, trade_token, password = Config().webull_creds()
+        _email, trade_token, password, security_q_ans = Config().webull_creds()
         self.wb.get_mfa(_email)
+        security_q_result = self.wb.get_security(_email)[0]
+        time.sleep(1)
+        security_q_id = security_q_result["questionId"]
         print("sleeping 15 secs")
         time.sleep(15)
         mfa = self.get_webull_verification_code()
         print("got mfa", mfa)
         time.sleep(1)
         self.trade_token = trade_token
-        result = self.wb.login(_email, password, "JMF", mfa)
+        result = self.wb.login(str(_email), str(password), "JMF", mfa, security_q_id, security_q_ans)
         print("got result")
         time.sleep(1)
         for err in ["Incorrect", "Wrong format"]:
@@ -87,7 +90,7 @@ class Trader:
         # Alert object from lib_quant_2/lib_quant_2/alert.py
         utils.write_to_stdout(alert.text)
         utils.write_to_stdout(f"About to {alert.action.name}")
-        self.wb.get_trade_token(self.trade_token)
+        print(self.wb.get_trade_token(self.trade_token))
         self.trade_actions_dict[alert.action](alert)
         utils.write_to_stdout(f"Done {alert.action.name}")
 
@@ -106,8 +109,6 @@ class Trader:
                                   quant=alert.shares,
                                   enforce="DAY"))
     def sell(self, alert):
-        print(alert.shares)
-        print(alert.ticker)
         print(self.wb.place_order(stock=alert.ticker,
                                   action="SELL",
                                   orderType="MKT",

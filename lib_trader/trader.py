@@ -19,7 +19,7 @@ import imaplib
 import traceback
 
 from lib_config import Config
-from lib_utils import utils
+from lib_utils.print_funcs import write_to_stdout
 from webull import paper_webull, webull
 
 from .actions import Actions
@@ -31,7 +31,7 @@ class Trader:
         self.webull_login()
 
     def webull_login(self):
-        utils.write_to_stdout("Logging in to webull")
+        write_to_stdout("Logging in to webull")
         self.wb_start_time = datetime.now()
         _email, trade_token, password, security_q_ans = Config().webull_creds()
         self.wb.get_mfa(_email)
@@ -49,8 +49,8 @@ class Trader:
         time.sleep(1)
         for err in ["Incorrect", "Wrong format"]:
             assert err not in str(result)
-        utils.write_to_stdout(result)
-        utils.write_to_stdout("Logged in to webull")
+        write_to_stdout(result)
+        write_to_stdout("Logged in to webull")
 
     def get_webull_verification_code(self):
         # https://www.geeksforgeeks.org/python-fetch-your-gmail-emails-from-a-particular-user/
@@ -87,12 +87,18 @@ class Trader:
             print(str(e))
 
     def trade(self, alert):
-        # Alert object from lib_quant_2/lib_quant_2/alert.py
-        utils.write_to_stdout(alert.text)
-        utils.write_to_stdout(f"About to {alert.action.name}")
-        print(self.wb.get_trade_token(self.trade_token))
-        self.trade_actions_dict[alert.action](alert)
-        utils.write_to_stdout(f"Done {alert.action.name}")
+        try:
+            # Alert object from lib_quant_2/lib_quant_2/alert.py
+            write_to_stdout(alert.text)
+            write_to_stdout(f"About to {alert.action.name}")
+            print(self.wb.get_trade_token(self.trade_token))
+            self.trade_actions_dict[alert.action](alert)
+            write_to_stdout(f"Done {alert.action.name}")
+        except Exception as e:
+            write_to_stdout("TRADE FAILED!")
+            write_to_stdout(e)
+            write_to_stdout("failing now!")
+            raise e
 
     @property
     def trade_actions_dict(self):
@@ -115,9 +121,9 @@ class Trader:
                                   quant=alert.shares,
                                   enforce="DAY"))
     def short(self, alert):
-        utils.write_to_stdout("Placeholder for short")
+        write_to_stdout("Placeholder for short")
     def cover(self, alert):
-        utils.write_to_stdout("Placeholder for cover")
+        write_to_stdout("Placeholder for cover")
     def add(self, alert):
         if "long" in alert.text:
             self.buy(alert)

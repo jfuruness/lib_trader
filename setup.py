@@ -11,6 +11,8 @@ setup(
     download_url='https://github.com/jfuruness/lib_trader.git',
     keywords=['Furuness', 'Trader', 'Robinhood', 'Webull', 'Stocks', 'Wrapper'],
     install_requires=[
+        'lib_config',
+        'lib_utils',
         ],
     classifiers=[
         'Environment :: Console',
